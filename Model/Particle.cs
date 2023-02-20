@@ -13,18 +13,18 @@ internal class Particle
     private readonly Barrier _startBarrier;
     private readonly Barrier _stopBarrier;
     private readonly Thread _thread;
-    private readonly int _tickRateMs;
+    private readonly int _tickRateMcs;
     private int _arrayIndex;
     private int _particleIndex;
     private bool _shutDown;
 
     internal long TickCount;
 
-    public Particle(double moveProbability, int tickRateMs, Barrier startBarrier,
+    public Particle(double moveProbability, int tickRateMcs, Barrier startBarrier,
         Action<int, int> move, int particleIndex, Crystal crystal, Barrier stopBarrier)
     {
         _moveProbability = moveProbability;
-        _tickRateMs = tickRateMs;
+        _tickRateMcs = tickRateMcs;
         _startBarrier = startBarrier;
         _move = move;
         _particleIndex = particleIndex;
@@ -51,7 +51,8 @@ internal class Particle
         while (true)
         {
             Tick();
-            Thread.Sleep(_tickRateMs);
+            Thread.Sleep(TimeSpan.FromMicroseconds(_tickRateMcs));
+            Thread.Yield();
             if (_shutDown)
                 break;
         }

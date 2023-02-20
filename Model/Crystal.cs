@@ -4,7 +4,7 @@ namespace Model;
 
 public abstract class Crystal
 {
-    private const int TickRateMs = 0;
+    private const int TickRateMcs = 0;
     private const int SnapshotRateMs = 1000;
     private readonly double _particleMoveProbability;
     private readonly int _particles;
@@ -37,7 +37,7 @@ public abstract class Crystal
 
         for (var i = 0; i < _particles; i++)
         {
-            var particle = new Particle(_particleMoveProbability, TickRateMs, _startBarrier, MoveParticle, i, this,
+            var particle = new Particle(_particleMoveProbability, TickRateMcs, _startBarrier, MoveParticle, i, this,
                 _stopBarrier);
             _particlesList.Add(particle);
             particle.Run();
@@ -177,17 +177,22 @@ public class CrystalLocalMutex : Crystal
     {
         var lowerIndex = Math.Min(fromIndex, toIndex);
         var higherIndex = Math.Max(fromIndex, toIndex);
-        
-        if(lowerIndex == higherIndex)
+
+        if (lowerIndex == higherIndex)
             return;
 
-        _mutexes[higherIndex].WaitOne();
-        _mutexes[lowerIndex].WaitOne();
+        var muxL = _mutexes[higherIndex];
+        var muxH = _mutexes[lowerIndex];
+
+        WaitHandle.WaitAll(new WaitHandle[] { muxL, muxH });
+
+        // muxH.WaitOne();
+        // muxL.WaitOne();
 
         CellsArray[fromIndex]--;
         CellsArray[toIndex]++;
 
-        _mutexes[lowerIndex].ReleaseMutex();
-        _mutexes[higherIndex].ReleaseMutex();
+        muxL.ReleaseMutex();
+        muxH.ReleaseMutex();
     }
 }
